@@ -18,6 +18,7 @@
  */
 class Solution {
 public:
+    // use int64_t to beat the test case
     bool helper(TreeNode* root, int64_t lower, int64_t upper){
         if(!root){
             return true;
