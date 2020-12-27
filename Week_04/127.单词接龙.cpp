@@ -9,43 +9,52 @@ class Solution {
 public:
     int ladderLength(string beginWord, string endWord, vector<string>& wordList) {
         unordered_set<string> dict(wordList.begin(), wordList.end());
-        unordered_set<string> vis({beginWord});
-        queue<string> q; q.push(beginWord);
-        // letters
-        char letters[26];   
+        unordered_set<string> head({beginWord}), tail({endWord});
+        unordered_set<string>* smaller = &head, *bigger = &tail;
+
+        if(!dict.count(endWord)){
+            return 0;
+        }
+
+        char letters[26];
         for(int i = 0; i < 26; ++i){
             letters[i] = i + 'a';
         }
-        // answer
-        int ans = 1;
 
-        while(!q.empty()){
-            int const LEN = q.size();
-            for(int i = 0; i < LEN; ++i){
-                string cur = q.front();
-                q.pop();
-                if(!cur.compare(endWord)){
-                    return ans;
-                }
-                // generate candidate words
-                for(int j = 0; j < cur.size(); ++j){
-                    string candidate = cur;
-                    for(char const ch : letters){
-                        if(ch == candidate[j]){
-                            continue;
+        int ans = 2;
+
+        while(!head.empty() && !tail.empty()){
+            if(head.size() < tail.size()){
+                smaller = &head;
+                bigger = &tail;
+            }
+            else{
+                smaller = &tail;
+                bigger = &head;
+            }
+            unordered_set<string> reachable;
+            for(auto it = smaller->begin(); it != smaller->end(); ++it){
+                string word = *it;
+                int const LEN = word.size();
+
+                for(int i = 0; i < LEN; ++i){
+                    char t = word[i];
+                    for(char ch : letters){
+                        word[i] = ch;
+                        if(bigger->count(word)){
+                            return ans;
                         }
-                        char backup = candidate[j];
-                        candidate[j] = ch;
-                        if(!dict.count(candidate)|| !vis.emplace(candidate).second){
-                            candidate[j] = backup;
-                            continue;
+
+                        if(dict.count(word)){
+                            reachable.insert(word);
+                            dict.erase(word);
                         }
-                        q.push(candidate);
-                        candidate[j] = backup;
                     }
+                    word[i] = t;
                 }
             }
             ++ans;
+            smaller->swap(reachable);
         }
         return 0;
     }
