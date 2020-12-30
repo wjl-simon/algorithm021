@@ -314,3 +314,89 @@ public:
     }
 };
 ```
+
+---
+
+# Remark: 什么时候使用 used 数组，什么时候使用 begin 变量
+
+有些朋友可能会疑惑什么时候使用 ```used```（也即 ```vis```） 数组，什么时候使用 ```begin```（也即 ```cur```） 变量。这里为大家简单总结一下：
+
+**排列问题**，*讲究顺序*（即 [2, 2, 3] 与 [2, 3, 2] 视为不同列表时），需要**记录哪些数字已经使用过**，此时用 ```used``` 数组；
+**组合问题**，*不讲究顺序*（即 [2, 2, 3] 与 [2, 3, 2] 视为相同列表时），需要**按照某种顺序搜索**，此时使用 ```begin``` 变量。
+注意：具体问题应该具体分析， 理解算法的设计思想 是至关重要的，请不要死记硬背。
+
+> 作者：liweiwei1419
+> 链接：https://leetcode-cn.com/problems/combination-sum/solution/hui-su-suan-fa-jian-zhi-python-dai-ma-java-dai-m-2/
+> 来源：力扣（LeetCode）
+> 著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。
+
+
+## 39. 组合总和
+
+### 版本一 无剪枝
+注意，因为这是**组合问题**，我们不需要引入```vis```数组记录哪些已经访问过（实际上本题根本不适合记录以访问数字，因为数字可以重复选用）。相反，我们在drill down的时候，```begin``` (也即```cur```)应当保持；同时，```bfs```中的```for```要从```begin```开始！如果我们再往前选数字将必定会有重复（例如[2, 3, 2]和[2, 2, 3]还有[3, 2, 2]）。我们因为可以重复选取，我们只需要在drill down里继续从```begin```(也即```cur```)选取。
+```Python
+from typing import List
+class Solution:
+    def combinationSum(self, candidates: List[int], target: int) -> List[List[int]]:
+
+        def dfs(candidates, begin, size, path, res, target):
+            if target < 0:
+                return
+            if target == 0:
+                res.append(path)
+                return
+
+            for index in range(begin, size):
+                dfs(candidates, index, size, path + [candidates[index]], res, target - candidates[index])
+
+        size = len(candidates)
+        if size == 0:
+            return []
+        path = []
+        res = []
+        dfs(candidates, 0, size, path, res, target)
+        return res
+
+作者：liweiwei1419
+链接：https://leetcode-cn.com/problems/combination-sum/solution/hui-su-suan-fa-jian-zhi-python-dai-ma-java-dai-m-2/
+来源：力扣（LeetCode）
+著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。
+```
+
+### 版本二：加剪枝版
+相比之下，我们提前对```candidate```排序，利用其有序特性，当```target - arr[i] < 0```时，对于```a[i + 1]```更是小于1，因此我们可以提前退出，以达到剪纸效果。
+
+```C++
+class Solution {
+    vector<int> temp;
+    vector<vector<int>> ans;
+
+    // target: the quantity we further need
+    void backtracking(int cur, vector<int>& arr, int target){
+        int const LEN = arr.size();
+        if(target == 0){
+            ans.push_back(temp);
+            return;
+        }
+        
+        for(int i = cur; i < LEN; ++i){
+            if(target - arr[i] < 0){
+                break;
+            }
+            temp.push_back(arr[i]);
+            backtracking(i, arr, target - arr[i]);
+            temp.pop_back();
+        }
+
+    }
+
+public:
+    vector<vector<int>> combinationSum(vector<int>& candidates, int target) {
+        sort(candidates.begin(), candidates.end());
+        backtracking(0, candidates, target);
+        return ans;
+    }
+};
+```
+
