@@ -1,0 +1,30 @@
+/*
+ * @lc app=leetcode.cn id=1143 lang=cpp
+ *
+ * [1143] 最长公共子序列
+ */
+
+// @lc code=start
+class Solution {
+public:
+    int longestCommonSubsequence(string text1, string text2) {
+        int const m = text1.size();
+        int const n = text2.size();
+        vector<vector<int>> dp(m + 1, vector<int>(n + 1, 0));
+
+        for(int i = 1; i <= m; ++i){
+            for(int j = 1; j <= n; ++j){
+                // N.B: i, j are starting from 1: should test text1[i - 1] and text2[j - 1]
+                if(text1[i - 1] == text2[j - 1]){
+                    dp[i][j] = dp[i - 1][j - 1] + 1;
+                }
+                else{
+                    dp[i][j] = max(dp[i - 1][j], dp[i][j - 1]);
+                }
+            }
+        }
+        return dp[m][n];
+    }
+};
+// @lc code=end
+
